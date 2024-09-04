@@ -1,4 +1,4 @@
-import cv2
+
 import numpy as np
 import streamlit as st
 from tensorflow.keras.models import load_model
@@ -7,6 +7,7 @@ from utils.datasets import get_labels
 from utils.inference import draw_text, draw_bounding_box, apply_offsets
 from utils.preprocessor import preprocess_input
 from PIL import Image
+import cv2
 
 # Streamlit app setup
 st.set_page_config(page_title="Real-time Emotion Recognition", layout="wide")
