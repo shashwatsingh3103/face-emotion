@@ -6,8 +6,10 @@ from statistics import mode
 from utils.datasets import get_labels
 from utils.inference import draw_text, draw_bounding_box, apply_offsets
 from utils.preprocessor import preprocess_input
+from PIL import Image
 
 # Streamlit app setup
+st.set_page_config(page_title="Real-time Emotion Recognition", layout="wide")
 st.title("Real-time Emotion Recognition")
 st.write("This application recognizes emotions in real-time from a webcam feed or video file.")
 
@@ -30,7 +32,7 @@ emotion_target_size = emotion_classifier.input_shape[1:3]
 emotion_window = []
 
 # Streamlit placeholders for buttons and video display
-allow_camera = st.checkbox("Allow Camera Access")
+allow_camera = st.checkbox("Allow Camera Access", value=True)
 upload_video = None
 if not allow_camera:
     upload_video = st.file_uploader("Upload a video file", type=["mp4", "mov", "avi", "mkv"])
@@ -39,10 +41,7 @@ start_button = st.sidebar.button("Start")
 stop_button = st.sidebar.button("Stop")
 frame_placeholder = st.empty()
 
-# Global variable to manage video capture state
-cap = None
-
-# Function to start capturing
+# Function to start capturing from video source
 def start_capturing(source):
     global cap
     cap = cv2.VideoCapture(source)
@@ -107,8 +106,9 @@ def start_capturing(source):
             draw_bounding_box(face_coordinates, rgb_image, color)
             draw_text(face_coordinates, rgb_image, emotion_mode, color, 0, -45, 1, 1)
 
-        # Update the Streamlit image display
-        frame_placeholder.image(rgb_image, channels="RGB")
+        # Convert to PIL Image and update the Streamlit image display
+        frame_image = Image.fromarray(rgb_image)
+        frame_placeholder.image(frame_image, caption="Emotion Recognition", use_column_width=True)
 
         # Check the stop button state
         if st.session_state.get("stop"):
@@ -121,9 +121,11 @@ def start_capturing(source):
 if start_button:
     st.session_state["stop"] = False
     if allow_camera:
+        # To handle webcam directly, use `0` as the source
         start_capturing(0)  # Start with webcam
     elif upload_video is not None:
-        start_capturing(upload_video.name)  # Start with uploaded video
+        # Use the uploaded video file directly
+        start_capturing(upload_video)  # Start with uploaded video file
 
 if stop_button:
     st.session_state["stop"] = True
