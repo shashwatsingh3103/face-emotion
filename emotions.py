@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import streamlit as st
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from statistics import mode
 from utils.datasets import get_labels
 from utils.inference import draw_text, draw_bounding_box, apply_offsets
@@ -33,9 +33,14 @@ emotion_window = []
 
 # Streamlit placeholders for buttons and video display
 allow_camera = st.checkbox("Allow Camera Access", value=True)
-upload_video = None
+
+# Conditionally display the video uploader based on checkbox state
+upload_video_placeholder = st.empty()
 if not allow_camera:
-    upload_video = st.file_uploader("Upload a video file", type=["mp4", "mov", "avi", "mkv"])
+    upload_video = upload_video_placeholder.file_uploader("Upload a video file", type=["mp4", "mov", "avi", "mkv"])
+else:
+    upload_video_placeholder.empty()
+    upload_video = None
 
 start_button = st.sidebar.button("Start")
 stop_button = st.sidebar.button("Stop")
@@ -43,7 +48,6 @@ frame_placeholder = st.empty()
 
 # Function to start capturing from video source
 def start_capturing(source):
-    global cap
     cap = cv2.VideoCapture(source)
 
     if not cap.isOpened():
@@ -116,6 +120,8 @@ def start_capturing(source):
             st.write("Stopped capturing.")
             st.session_state["stop"] = False
             break
+
+    cap.release()
 
 # Handle button actions
 if start_button:
